@@ -1,0 +1,20 @@
+---
+BasedOnStyle: Google
+Language: Cpp
+Standard: c++17
+ColumnLimit: 80
+PointerAlignment: Left
+ReferenceAlignment: Left
+NamespaceIndentation: None
+BreakBeforeBraces: Attach
+SortIncludes: CaseInsensitive
+IncludeBlocks: Regroup
+IncludeCategories:
+  - Regex:           '^<gtest/'
+    Priority:        1
+  - Regex:           '^<[a-z_]+>'
+    Priority:        2
+  - Regex:           '^"simple_tuner/'
+    Priority:        3
+  - Regex:           '.*'
+    Priority:        4
