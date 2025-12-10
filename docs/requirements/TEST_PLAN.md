@@ -40,7 +40,7 @@ Testing covers all application functionality across desktop (unit testing) and m
 - Platforms: macOS 11+, Ubuntu 20.04+, Windows 10+ (primary: developer workstations)
 - Build System: CMake 3.20+
 - Compiler: Clang 12+, GCC 10+, MSVC 2019+
-- Test Framework: Catch2 or Google Test (lightweight C++ unit test framework)
+- Test Framework: Google Test (lightweight C++ unit test framework)
 - Execution: Local development machines, CI/CD runners (GitHub Actions, Jenkins, etc.)
 - Purpose: Algorithm validation, regression prevention, rapid iteration
 
@@ -104,7 +104,7 @@ Desktop-based unit testing enables rapid algorithm validation without mobile dev
   - `MockAudioOutput`: Captures generated audio for verification
   - `MockConfigStorage`: In-memory preference storage for test isolation
   - `MockPermissions`: Auto-granted permissions for test environment
-- **Test Assertions:** Standard C++ unit test framework (Catch2/Google Test)
+- **Test Assertions:** Standard C++ unit test framework (Google Test)
 - **Coverage Target:** ≥80% of shared library code
 
 **Mobile Unit Test Execution (Secondary):**
@@ -848,7 +848,7 @@ Desktop-based unit testing enables rapid algorithm validation without mobile dev
 **Software:**
 - **Desktop testing:**
   - CMake 3.20+ (build system)
-  - Catch2 or Google Test (C++ unit test framework)
+  - Google Test (C++ unit test framework)
   - CI/CD platform (GitHub Actions, Jenkins, etc.)
   - Code coverage tools (gcov, lcov, or similar)
 - Xcode with testing tools

@@ -30,6 +30,11 @@ This implementation plan provides a phased approach to building SimpleTuner usin
    - Configure C++17 standard, enable warnings (-Wall -Wextra)
    - Set up directory structure:
      ```
+     include/          # Public headers for simple_tuner_core
+       simple_tuner/
+         algorithms/   # Public algorithm headers
+         interfaces/   # Public abstract interfaces
+         config/       # Public configuration headers
      src/
        shared/         # Platform-independent core (≥95% of algorithm code)
          algorithms/   # Pitch detection, tone generation, frequency calc
@@ -58,7 +63,7 @@ This implementation plan provides a phased approach to building SimpleTuner usin
    - Implement minimal functionality sufficient for unit testing
 
 4. **Unit Test Framework Integration**
-   - Add Catch2 or Google Test as dependency (via CMake FetchContent or submodule)
+   - Add Google Test as dependency (via CMake FetchContent)
    - Create first test file: `tests/unit/test_frequency_calculator.cpp`
    - Implement basic test: Verify A4 = 440 Hz calculation
    - Configure CMake to build and execute tests: `make test` or `ctest`
@@ -1069,7 +1074,7 @@ This implementation plan provides a phased approach to building SimpleTuner usin
 
 **Test Infrastructure:**
 - **Build System:** CMake
-- **Test Framework:** Catch2 or Google Test
+- **Test Framework:** Google Test
 - **Mock Platform Services:** MockAudioInput, MockAudioOutput, MockConfigStorage, MockPermissions
 - **Platforms:** macOS, Linux, Windows (developer workstations + CI runners)
 
