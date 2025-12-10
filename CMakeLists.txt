@@ -13,6 +13,46 @@ else()
   add_compile_options(-Wall -Wextra -Wpedantic -Werror)
 endif()
 
+# Code coverage support
+option(ENABLE_COVERAGE "Enable code coverage" OFF)
+if(ENABLE_COVERAGE)
+  if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+    add_compile_options(--coverage -O0 -g)
+    add_link_options(--coverage)
+  endif()
+endif()
+
+# Static analysis tools
+option(ENABLE_CLANG_TIDY "Enable clang-tidy analysis" OFF)
+option(ENABLE_CPPCHECK "Enable cppcheck analysis" OFF)
+
+if(ENABLE_CLANG_TIDY)
+  find_program(CLANG_TIDY_EXE NAMES clang-tidy)
+  if(CLANG_TIDY_EXE)
+    set(CMAKE_CXX_CLANG_TIDY ${CLANG_TIDY_EXE})
+    message(STATUS "clang-tidy found: ${CLANG_TIDY_EXE}")
+  else()
+    message(WARNING "clang-tidy requested but not found")
+  endif()
+endif()
+
+if(ENABLE_CPPCHECK)
+  find_program(CPPCHECK_EXE NAMES cppcheck)
+  if(CPPCHECK_EXE)
+    set(CMAKE_CXX_CPPCHECK
+      ${CPPCHECK_EXE}
+      --enable=all
+      --suppress=missingIncludeSystem
+      --suppress=unmatchedSuppression
+      --inline-suppr
+      --error-exitcode=1
+    )
+    message(STATUS "cppcheck found: ${CPPCHECK_EXE}")
+  else()
+    message(WARNING "cppcheck requested but not found")
+  endif()
+endif()
+
 # GoogleTest dependency via FetchContent
 include(FetchContent)
 FetchContent_Declare(

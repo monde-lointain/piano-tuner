@@ -49,3 +49,95 @@ jobs:
         run: |
           find include src tests -name '*.cpp' -o -name '*.h' | \
           xargs clang-format --dry-run --Werror
+
+  clang-tidy:
+    name: Clang-Tidy Analysis
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang-tidy cmake
+
+      - name: Configure with clang-tidy
+        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug -DENABLE_CLANG_TIDY=ON -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+
+      - name: Build with clang-tidy
+        run: cmake --build build
+
+  cppcheck:
+    name: Cppcheck Analysis
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cppcheck cmake
+
+      - name: Configure with cppcheck
+        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug -DENABLE_CPPCHECK=ON
+
+      - name: Build with cppcheck
+        run: cmake --build build
+
+  code-coverage:
+    name: Code Coverage
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gcovr lcov cmake
+
+      - name: Configure with coverage
+        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug -DENABLE_COVERAGE=ON
+
+      - name: Build
+        run: cmake --build build
+
+      - name: Run tests
+        run: ctest --test-dir build --output-on-failure
+
+      - name: Generate coverage report
+        run: |
+          gcovr --root . --filter include/ --filter src/ \
+            --exclude 'build/_deps/' \
+            --exclude 'tests/' \
+            --print-summary \
+            --xml-pretty --xml coverage.xml \
+            --html-details coverage.html
+
+      - name: Upload coverage HTML report
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: coverage.html*
+
+      - name: Upload coverage XML
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-xml
+          path: coverage.xml
+
+      - name: Check coverage threshold
+        run: |
+          COVERAGE=$(gcovr --root . --filter include/ --filter src/ \
+            --exclude 'build/_deps/' --exclude 'tests/' | \
+            grep -oP 'lines: \K[0-9.]+(?=%)')
+          echo "Coverage: ${COVERAGE}%"
+          if (( $(echo "$COVERAGE < 80.0" | bc -l) )); then
+            echo "Coverage ${COVERAGE}% is below 80% threshold"
+            exit 1
+          fi
