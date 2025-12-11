@@ -7,15 +7,17 @@ Checks: >
   modernize-*,
   performance-*,
   readability-*,
+  -bugprone-easily-swappable-parameters,
   -modernize-use-trailing-return-type,
   -modernize-use-nodiscard,
   -readability-identifier-length,
   -cppcoreguidelines-avoid-magic-numbers,
   -readability-magic-numbers,
   -cppcoreguidelines-pro-bounds-pointer-arithmetic,
-  -cppcoreguidelines-pro-type-reinterpret-cast
+  -cppcoreguidelines-pro-type-reinterpret-cast,
+  -cppcoreguidelines-special-member-functions
 WarningsAsErrors: '*'
-HeaderFilterRegex: '.*,-include/simple_tuner/*'
+HeaderFilterRegex: '.*'
 CheckOptions:
   - key: readability-identifier-naming.NamespaceCase
     value: lower_case
