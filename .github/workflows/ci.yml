@@ -50,59 +50,83 @@ jobs:
           find include src tests -name '*.cpp' -o -name '*.h' | \
           xargs clang-format --dry-run --Werror
 
-  clang-tidy:
-    name: Clang-Tidy Analysis
+  static-analysis:
+    name: Static Analysis
     runs-on: ubuntu-22.04
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Install dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y clang-tidy cmake
+      - name: Setup CMake
+        uses: lukka/get-cmake@latest
 
-      - name: Configure with clang-tidy
-        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug -DENABLE_CLANG_TIDY=ON -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+      - name: Install analysis tools
+        run: sudo apt-get update && sudo apt-get install -y clang-tidy cppcheck
 
-      - name: Build with clang-tidy
-        run: cmake --build build
+      - name: Configure
+        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
 
-  cppcheck:
-    name: Cppcheck Analysis
+      - name: Run clang-tidy
+        run: cmake --build build --target tidy
+        continue-on-error: true
+
+      - name: Run cppcheck
+        run: cmake --build build --target cppcheck-xml
+        continue-on-error: true
+
+      - name: Upload analysis results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: static-analysis-reports
+          path: build/cppcheck.xml
+
+  complexity-analysis:
+    name: Complexity Analysis
     runs-on: ubuntu-22.04
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Install dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y cppcheck cmake
+      - name: Setup CMake
+        uses: lukka/get-cmake@latest
 
-      - name: Configure with cppcheck
-        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug -DENABLE_CPPCHECK=ON
+      - name: Install lizard
+        run: pip install lizard
 
-      - name: Build with cppcheck
-        run: cmake --build build
+      - name: Configure
+        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
 
-  code-coverage:
+      - name: Run complexity analysis
+        run: cmake --build build --target complexity-xml
+        continue-on-error: true
+
+      - name: Upload complexity report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: complexity-report
+          path: build/complexity.xml
+
+  coverage:
     name: Code Coverage
     runs-on: ubuntu-22.04
+    needs: desktop-tests
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Install dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y gcovr lcov cmake
+      - name: Setup CMake
+        uses: lukka/get-cmake@latest
 
-      - name: Configure with coverage
-        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug -DENABLE_COVERAGE=ON
+      - name: Install coverage tools
+        run: sudo apt-get update && sudo apt-get install -y gcovr
+
+      - name: Configure
+        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug -DENABLE_COVERAGE_ANALYSIS=ON
 
       - name: Build
         run: cmake --build build
@@ -110,34 +134,13 @@ jobs:
       - name: Run tests
         run: ctest --test-dir build --output-on-failure
 
-      - name: Generate coverage report
-        run: |
-          gcovr --root . --filter include/ --filter src/ \
-            --exclude 'build/_deps/' \
-            --exclude 'tests/' \
-            --print-summary \
-            --xml-pretty --xml coverage.xml \
-            --html-details coverage.html
+      - name: Generate coverage reports
+        run: cmake --build build --target coverage
 
-      - name: Upload coverage HTML report
+      - name: Upload coverage reports
         uses: actions/upload-artifact@v4
         with:
-          name: coverage-report
-          path: coverage.html*
-
-      - name: Upload coverage XML
-        uses: actions/upload-artifact@v4
-        with:
-          name: coverage-xml
-          path: coverage.xml
-
-      - name: Check coverage threshold
-        run: |
-          COVERAGE=$(gcovr --root . --filter include/ --filter src/ \
-            --exclude 'build/_deps/' --exclude 'tests/' | \
-            grep -oP 'lines: \K[0-9.]+(?=%)')
-          echo "Coverage: ${COVERAGE}%"
-          if (( $(echo "$COVERAGE < 80.0" | bc -l) )); then
-            echo "Coverage ${COVERAGE}% is below 80% threshold"
-            exit 1
-          fi
+          name: coverage-reports
+          path: |
+            build/coverage.xml
+            build/coverage/

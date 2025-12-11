@@ -33,7 +33,7 @@ endif()
 
 # --- User-configurable options ---
 set(CPPCHECK_ENABLE_CHECKS "style" CACHE STRING "Checks to enable in cppcheck")
-set(CPPCHECK_DIRS "src;test" CACHE STRING "Directories to analyze with cppcheck")
+set(CPPCHECK_DIRS "src" CACHE STRING "Directories to analyze with cppcheck")
 set(CPPCHECK_INCLUDE_DIRS "" CACHE STRING "Include directories for cppcheck")
 set(CPPCHECK_EXCLUDES "" CACHE STRING "Files/directories to exclude from cppcheck")
 set(CPPCHECK_ADDITIONAL_DIRS "" CACHE STRING "Additional directories to analyze")

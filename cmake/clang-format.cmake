@@ -27,7 +27,7 @@ if(CLANG_FORMAT)
   endif()
 
   if(NOT CLANG_FORMAT_DIRS)
-    set(CLANG_FORMAT_DIRS src test CACHE STRING "CMake list of directories to format using clang-format.")
+    set(CLANG_FORMAT_DIRS src CACHE STRING "CMake list of directories to format using clang-format.")
   endif()
 
   if(NOT CLANG_FORMAT_FILETYPES)
@@ -60,13 +60,13 @@ if(CLANG_FORMAT)
   )
 
   add_custom_target(format
-    COMMAND ${CMAKE_CURRENT_LIST_DIR}/format.sh
+    COMMAND ${CMAKE_CURRENT_LIST_DIR}/../scripts/format.sh
       ${clang_format_args}
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
   )
 
   add_custom_target(format-patch
-    COMMAND ${CMAKE_CURRENT_LIST_DIR}/format.sh
+    COMMAND ${CMAKE_CURRENT_LIST_DIR}/../scripts/format.sh
       -p
       ${clang_format_args}
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}

@@ -30,7 +30,7 @@ endif()
 # -----------------------------
 # Default configuration
 # -----------------------------
-set(DEFAULT_LIZARD_DIRS "src;test")
+set(DEFAULT_LIZARD_DIRS "src")
 set(DEFAULT_LENGTH_LIMIT 60)
 set(DEFAULT_CCN_LIMIT 10)
 set(DEFAULT_ARG_LIMIT 6)

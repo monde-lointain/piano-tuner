@@ -43,7 +43,7 @@ if(CLANG_TIDY)
 
   ### Supply argument defaults
   if(NOT CLANG_TIDY_DIRS)
-    set(CLANG_TIDY_DIRS src test CACHE STRING "CMake list of directories to analyze with clang-tidy.")
+    set(CLANG_TIDY_DIRS src CACHE STRING "CMake list of directories to analyze with clang-tidy.")
   endif()
 
   if(NOT CLANG_TIDY_FILETYPES)
@@ -63,7 +63,7 @@ if(CLANG_TIDY)
   string(REPLACE ";" "," CLANG_TIDY_FILETYPES_ARG "${CLANG_TIDY_FILETYPES}")
 
   add_custom_target(tidy
-    COMMAND ${CMAKE_CURRENT_LIST_DIR}/clang-tidy.sh ${CMAKE_BINARY_DIR}
+    COMMAND ${CMAKE_CURRENT_LIST_DIR}/../scripts/clang-tidy.sh ${CMAKE_BINARY_DIR}
       # Directories to include in analysis
       ${CLANG_TIDY_DIRS_ARG}
       # File types to include in analysis
