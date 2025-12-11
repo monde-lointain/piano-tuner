@@ -28,7 +28,7 @@ double FrequencyCalculator::midi_to_frequency(int midi_note) const noexcept {
 int FrequencyCalculator::frequency_to_midi(double frequency) const noexcept {
   // n = 69 + 12 * log2(f / f_A4)
   return static_cast<int>(std::round(
-      kMidiNoteA4 + kNotesPerOctave * std::log2(frequency / reference_a4_)));
+      kMidiNoteA4 + (kNotesPerOctave * std::log2(frequency / reference_a4_))));
 }
 
 double FrequencyCalculator::calculate_cents(double frequency,

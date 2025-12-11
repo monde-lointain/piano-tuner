@@ -27,7 +27,7 @@ class MockAudioOutput : public IAudioOutput {
 
  private:
   double sample_rate_;
-  bool active_;
+  bool active_ = false;
   std::vector<float> captured_samples_;
 };
 

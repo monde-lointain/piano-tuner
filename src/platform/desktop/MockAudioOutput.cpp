@@ -3,7 +3,7 @@
 namespace simple_tuner {
 
 MockAudioOutput::MockAudioOutput(double sample_rate)
-    : sample_rate_(sample_rate), active_(false) {}
+    : sample_rate_(sample_rate) {}
 
 bool MockAudioOutput::initialize() noexcept { return true; }
 

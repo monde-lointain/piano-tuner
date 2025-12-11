@@ -25,9 +25,9 @@ class MockAudioInput : public IAudioInput {
 
  private:
   double sample_rate_;
-  double test_frequency_;
-  double phase_;
-  bool active_;
+  double test_frequency_ = 440.0;
+  double phase_ = 0.0;
+  bool active_ = false;
 };
 
 }  // namespace simple_tuner

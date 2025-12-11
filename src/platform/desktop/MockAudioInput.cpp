@@ -9,10 +9,7 @@ constexpr double kTwoPi = 2.0 * M_PI;
 }
 
 MockAudioInput::MockAudioInput(double sample_rate)
-    : sample_rate_(sample_rate),
-      test_frequency_(440.0),
-      phase_(0.0),
-      active_(false) {}
+    : sample_rate_(sample_rate) {}
 
 bool MockAudioInput::initialize() noexcept { return true; }
 

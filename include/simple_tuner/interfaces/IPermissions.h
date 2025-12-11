@@ -3,7 +3,7 @@
 
 namespace simple_tuner {
 
-enum class PermissionStatus { NOT_DETERMINED, GRANTED, DENIED, RESTRICTED };
+enum class PermissionStatus { kNotDetermined, kGranted, kDenied, kRestricted };
 
 class IPermissions {
  public:
