@@ -72,11 +72,8 @@ configure-no-tests: ## Configure build without tests (set BUILD_TYPE for Debug/R
 # Build Targets
 #################
 
-build: ## Build the project (requires prior configure)
-	@if [ ! -d "$(BUILD_DIR)" ]; then \
-		echo "Error: Build not configured. Run 'make configure' first."; \
-		exit 1; \
-	fi
+## Build the project (requires prior configure)
+build: | configure
 	cmake --build $(BUILD_DIR) -j $(JOBS)
 
 rebuild: clean configure build ## Clean, configure, and build from scratch
@@ -89,28 +86,13 @@ clean: ## Remove build directory
 # Testing Targets
 ##################
 
-test: ## Run tests
-	@if [ ! -d "$(BUILD_DIR)" ]; then \
-		echo "Error: Build not configured. Run 'make configure && make build' first."; \
-		exit 1; \
-	fi
-	ctest --test-dir $(BUILD_DIR) --output-on-failure
+## Run tests
+test: | configure build
+	ctest --test-dir $(BUILD_DIR)/tests --output-on-failure
 
-coverage: ## Generate coverage reports (requires configure-coverage)
-	@if [ ! -d "$(BUILD_DIR)" ]; then \
-		echo "Error: Build not configured. Run 'make configure-coverage && make build' first."; \
-		exit 1; \
-	fi
-	cmake --build $(BUILD_DIR) --target coverage
-
-coverage-html: coverage ## Generate coverage and open HTML report
-	@if [ -f "$(BUILD_DIR)/coverage/index.html" ]; then \
-		xdg-open $(BUILD_DIR)/coverage/index.html 2>/dev/null || \
-		open $(BUILD_DIR)/coverage/index.html 2>/dev/null || \
-		echo "Coverage report: $(BUILD_DIR)/coverage/index.html"; \
-	else \
-		echo "Error: Coverage HTML not found."; \
-	fi
+## Generate coverage reports (requires configure-coverage)
+coverage: | configure-coverage build
+	cmake --build $(BUILD_DIR)/tests --target coverage
 
 ####################
 # Analysis Targets
@@ -127,11 +109,7 @@ format-check: ## Check code formatting (dry-run)
 	find include src tests -name '*.cpp' -o -name '*.h' | \
 		xargs clang-format --dry-run --Werror
 
-tidy: ## Run clang-tidy
-	@if [ ! -d "$(BUILD_DIR)" ]; then \
-		echo "Error: Build not configured. Run 'make configure' first."; \
-		exit 1; \
-	fi
+tidy: | configure
 	cmake --build $(BUILD_DIR) --target tidy
 
 cppcheck: ## Run cppcheck
