@@ -72,8 +72,7 @@ configure-no-tests: ## Configure build without tests (set BUILD_TYPE for Debug/R
 # Build Targets
 #################
 
-## Build the project (requires prior configure)
-build: | configure
+build: ## Build the project (requires prior configure)
 	cmake --build $(BUILD_DIR) -j $(JOBS)
 
 rebuild: clean configure build ## Clean, configure, and build from scratch
@@ -86,12 +85,10 @@ clean: ## Remove build directory
 # Testing Targets
 ##################
 
-## Run tests
-test: | configure build
+test: ## Run tests
 	ctest --test-dir $(BUILD_DIR)/tests --output-on-failure
 
-## Generate coverage reports (requires configure-coverage)
-coverage: | configure-coverage build
+coverage: ## Generate coverage reports (requires configure-coverage)
 	cmake --build $(BUILD_DIR)/tests --target coverage
 
 ####################
@@ -109,7 +106,7 @@ format-check: ## Check code formatting (dry-run)
 	find include src tests -name '*.cpp' -o -name '*.h' | \
 		xargs clang-format --dry-run --Werror
 
-tidy: | configure
+tidy: ## Run clang-tidy
 	cmake --build $(BUILD_DIR) --target tidy
 
 cppcheck: ## Run cppcheck
