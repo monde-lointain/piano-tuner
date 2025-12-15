@@ -77,7 +77,8 @@
         <MODULEPATH id="juce_data_structures" path="../../../../applications/JUCE/modules"/>
       </MODULEPATHS>
     </ANDROIDSTUDIO>
-    <XCODE_IPHONE targetFolder="JUCEBuilds/iOS" plistPreprocess="1" customPList="&lt;key&gt;NSMicrophoneUsageDescription&lt;/key&gt;&#10;&lt;string&gt;SimpleTuner needs microphone access to detect pitch&lt;/string&gt;">
+    <XCODE_IPHONE targetFolder="JUCEBuilds/iOS" plistPreprocess="1" customPList="&lt;key&gt;NSMicrophoneUsageDescription&lt;/key&gt;&#10;&lt;string&gt;SimpleTuner needs microphone access to detect pitch&lt;/string&gt;"
+                  microphonePermissionNeeded="1">
       <CONFIGURATIONS>
         <CONFIGURATION isDebug="1" name="Debug" targetName="SimpleTuner" iosDeploymentTarget="13.0"
                        iosCompatibility="13.0"/>
