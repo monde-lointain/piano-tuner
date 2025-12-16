@@ -26,17 +26,12 @@ PitchDetectionController::PitchDetectionController(std::size_t buffer_size,
       confidence_threshold_(0.5),
       sample_rate_(sample_rate) {
   // Configure detection tiers
-  // Fast: 512 samples, min 262Hz (C4), 128-sample hop (~3ms @ 48kHz)
-  tiers_.push_back({512, 128, 262.0});
-  // Medium: 1024 samples, min 65Hz (C2), 256-sample hop (~6ms @ 48kHz)
-  tiers_.push_back({1024, 256, 65.0});
-  // Full: 4096 samples, min 32.7Hz (C1), 1024-sample hop (~23ms @ 48kHz)
+  // Fast: 512 samples, ~86Hz min (E2), 128-sample hop (~3ms @ 48kHz)
+  tiers_.push_back({512, 128, 86.0});
+  // Medium: 1024 samples, ~43Hz min (F#1), 256-sample hop (~6ms @ 48kHz)
+  tiers_.push_back({1024, 256, 43.0});
+  // Full: 4096 samples, 32.7Hz min (C1), 1024-sample hop (~23ms @ 48kHz)
   tiers_.push_back({buffer_size, 1024, 32.7});
-
-  // Configure detectors with appropriate frequency ranges
-  fast_detector_->set_min_frequency(262.0);   // C4
-  medium_detector_->set_min_frequency(65.0);  // C2
-  full_detector_->set_min_frequency(32.7);    // C1
 }
 
 PitchDetectionController::~PitchDetectionController() = default;

@@ -166,6 +166,29 @@ TEST_F(PitchDetectorTest, DetectD4) {
   EXPECT_TRUE(is_frequency_accurate(result.frequency, d4_freq, kCentTolerance));
 }
 
+TEST_F(PitchDetectorTest, DetectDSharp4) {
+  // D#4 (207.65 Hz) - lower bound of problem range
+  constexpr double dsharp4_freq = 207.65;
+  auto samples = generate_sine(dsharp4_freq, kBufferSize);
+  auto result =
+      detector_->detect_pitch_detailed(samples.data(), samples.size());
+
+  EXPECT_TRUE(result.is_valid);
+  EXPECT_TRUE(
+      is_frequency_accurate(result.frequency, dsharp4_freq, kCentTolerance));
+}
+
+TEST_F(PitchDetectorTest, DetectE4) {
+  // E4 (220 Hz) - guitar high E string
+  constexpr double e4_freq = 220.0;
+  auto samples = generate_sine(e4_freq, kBufferSize);
+  auto result =
+      detector_->detect_pitch_detailed(samples.data(), samples.size());
+
+  EXPECT_TRUE(result.is_valid);
+  EXPECT_TRUE(is_frequency_accurate(result.frequency, e4_freq, kCentTolerance));
+}
+
 TEST_F(PitchDetectorTest, DetectA4ReferenceNote) {
   constexpr double a4_freq = 440.0;
   auto samples = generate_sine(a4_freq, kBufferSize);
