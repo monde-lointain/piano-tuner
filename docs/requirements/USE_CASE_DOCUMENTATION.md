@@ -137,7 +137,7 @@ Musician launches application (opens in Meter Mode by default) or switches to Me
 |----|------|------|----------------|
 | BR-001 | Detection range must span C1 (32.70 Hz) to C8 (4186.01 Hz) | Constraint | Static |
 | BR-002 | Detection accuracy must be within ±1 cent for signals ≥40 dB SNR | Quality | Static |
-| BR-003 | Pitch detection latency must not exceed 30ms on 90% of devices | Performance | Static |
+| BR-003 | Pitch detection latency must not exceed 100ms on 90% of devices | Performance | Static |
 | BR-004 | Display update rate must be minimum 20 Hz | Performance | Static |
 | BR-005 | "IN TUNE" zone defined as ±5 cents from target frequency | Business Logic | Static |
 | BR-006 | Note persistence requires 100ms stability before display change | Business Logic | Static |
@@ -470,7 +470,7 @@ Musician rotates device between portrait and landscape orientations; application
 | BR-001 | Reference pitch A4 must be between 410-480 Hz inclusive | Constraint | Static | Requirements Specification |
 | BR-002 | Detection accuracy must be within ±1 cent for signals ≥40 dB SNR | Quality Standard | Static | Requirements Specification |
 | BR-003 | Reference tone accuracy must be within ±1.5 cents | Quality Standard | Static | Requirements Specification |
-| BR-004 | Pitch detection latency must not exceed 30ms on 90% of supported devices | Performance | Static | Requirements Specification |
+| BR-004 | Pitch detection latency must not exceed 100ms on 90% of supported devices | Performance | Static | Requirements Specification |
 | BR-005 | Tuning status "IN TUNE" defined as ±5 cents from target frequency | Business Logic | Static | Requirements Specification |
 | BR-006 | Detected note must remain stable for 100ms before display updates | Business Logic | Static | Design Decision |
 | BR-007 | All note frequencies calculated using 12-tone equal temperament: f(n) = f_ref × 2^((n-57)/12) | Computation | Static | Music Theory |

@@ -30,7 +30,7 @@ The JUCE framework provides cross-platform audio capabilities suitable for devel
 
 ### 1.4 Success Metrics
 
-**SM-1:** Performance: Pitch detection latency under 30ms on 90% of supported devices.
+**SM-1:** Performance: Pitch detection latency under 100ms on 90% of supported devices.
 
 **SM-2:** Stability: Crash rate below 0.5% of user sessions.
 

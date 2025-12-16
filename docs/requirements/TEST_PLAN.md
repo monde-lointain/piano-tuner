@@ -366,9 +366,10 @@ Desktop-based unit testing enables rapid algorithm validation without mobile dev
 ### 4.2 Performance Testing
 
 **ST-PF-001: Pitch Detection Latency**
-- **Objective:** Verify latency ≤30 ms on 90% of devices
+- **Objective:** Verify latency ≤100 ms on 90% of devices
 - **Method:** High-speed video analysis of input signal to display update
-- **Pass Criteria:** Latency ≤30 ms on 9/10 test devices
+- **Pass Criteria:** Latency ≤100 ms on 9/10 test devices
+- **Note:** 4096-sample buffer (93ms @ 44.1kHz) required for C1 detection accuracy
 
 **ST-PF-002: Tone Generation Latency**
 - **Objective:** Confirm tone starts within 10 ms
@@ -608,8 +609,8 @@ Desktop-based unit testing enables rapid algorithm validation without mobile dev
 **AT-PF-001: Latency Requirements Met**
 - **Objective:** Confirm latency specifications achieved
 - **Method:** Statistical analysis of latency measurements
-- **Pass Criteria:** 
-  - Pitch detection ≤30 ms on 90%+ devices
+- **Pass Criteria:**
+  - Pitch detection ≤100 ms on 90%+ devices
   - Tone generation ≤10 ms on 100% devices
 
 **AT-PF-002: Resource Usage Acceptable**

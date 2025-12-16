@@ -405,7 +405,7 @@ The application serves distinct user classes with varying needs, technical exper
 - Provide reference pitch calibration with 1 Hz precision across practical range
 - Display cent values prominently for users who interpret numerical deviation
 - Include pure interval markers as educational feature for historical awareness
-- Ensure pitch detection latency under 30ms for responsive professional use
+- Ensure pitch detection latency under 100ms for responsive professional use
 - Maintain accuracy standards comparable to professional hardware tuners
 
 #### 2.2.3 Music Educators (Secondary User Class)
@@ -589,8 +589,8 @@ The following constraints establish boundaries for architecture, technology sele
 - **Impact:** Memory allocations, file I/O, network operations, and complex computations prohibited in audio callback; requires careful algorithm selection and optimization
 
 **CON-6: Low-Latency Requirement**
-- **Constraint:** Pitch detection latency from microphone input to display update must not exceed 30ms on 90% of supported devices
-- **Rationale:** Delays beyond 30ms create noticeable lag between playing note and seeing tuning feedback, degrading user experience
+- **Constraint:** Pitch detection latency from microphone input to display update must not exceed 100ms on 90% of supported devices
+- **Rationale:** Sub-100ms latency provides responsive feedback. 4096-sample buffer (93ms @ 44.1kHz) required for accurate C1 detection (lowest note in range)
 - **Impact:** Requires efficient autocorrelation computation, optimized pitch period analysis algorithms, and minimal UI update overhead
 
 **CON-7: Application Size Limit**
@@ -980,7 +980,7 @@ The system shall display a "no signal" or inactive state when:
 
 **FR-018: Pitch Detection Latency**  
 **Priority:** CRITICAL  
-The system shall update the display with newly detected pitch information within 30 ms of the corresponding audio arriving at the microphone input on devices meeting minimum hardware specifications.
+The system shall update the display with newly detected pitch information within 100 ms of the corresponding audio arriving at the microphone input on devices meeting minimum hardware specifications.
 
 **FR-019: Display Update Rate**  
 **Priority:** HIGH  
@@ -2956,14 +2956,15 @@ This section defines non-functional requirements addressing quality characterist
 
 **Performance addresses system responsiveness, throughput, and resource efficiency.**
 
-**PE-001: Pitch Detection Latency**  
-**Priority:** CRITICAL  
-**Requirement:** The system shall detect pitch and update the display with latency ≤30 ms from audio input to screen display on 90% of supported devices under normal operating conditions (CPU <60% utilized, device not overheating).
+**PE-001: Pitch Detection Latency**
+**Priority:** CRITICAL
+**Requirement:** The system shall detect pitch and update the display with latency ≤100 ms from audio input to screen display on 90% of supported devices under normal operating conditions (CPU <60% utilized, device not overheating).
 
 **Measurement:**
 - Method: Compare audio input waveform timestamp to display update timestamp using high-speed camera synchronized with audio interface
 - Devices tested: Minimum 3 iOS devices (iPhone SE, iPhone 12, iPhone 14), 5 Android devices (low-end to flagship)
-- Pass criterion: 90% of test devices achieve ≤30 ms latency
+- Pass criterion: 90% of test devices achieve ≤100 ms latency
+- **Note:** 4096-sample buffer (93ms @ 44.1kHz) required for accurate C1 (32.7 Hz) detection
 
 **PE-002: Tone Generation Latency**  
 **Priority:** CRITICAL  
@@ -4042,7 +4043,7 @@ This section addresses additional requirements not covered in previous sections.
 
 **Just intonation:** A tuning system based on pure integer frequency ratios (e.g., 3:2 for perfect fifth, 5:4 for major third), producing acoustically pure intervals at the cost of key-change complications. Contrasts with equal temperament.
 
-**Latency:** The time delay between an event (e.g., playing a note) and the system's response (e.g., displaying the detected pitch). Low latency (<30 ms) is critical for interactive tuning applications.
+**Latency:** The time delay between an event (e.g., playing a note) and the system's response (e.g., displaying the detected pitch). Low latency (<100 ms) is critical for interactive tuning applications.
 
 **Meter Mode:** The application's operating mode where it continuously monitors microphone input, detects pitch, and displays tuning status with an analog-style meter.
 
