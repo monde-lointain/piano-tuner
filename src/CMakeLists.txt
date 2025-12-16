@@ -8,6 +8,9 @@ add_library(simple_tuner_core STATIC
   # Shared config
   shared/config/ConfigManager.cpp
 
+  # Controllers
+  controllers/PitchDetectionController.cpp
+
   # Desktop platform mocks
   platform/desktop/MockAudioInput.cpp
   platform/desktop/MockAudioOutput.cpp

@@ -1,13 +1,22 @@
 #include "simple_tuner/ui/MainComponent.h"
 
+#include <iomanip>
+#include <sstream>
+
+#include "simple_tuner/algorithms/FrequencyCalculator.h"
+#include "simple_tuner/controllers/PitchDetectionController.h"
+
 namespace simple_tuner {
 
-MainComponent::MainComponent() {
+MainComponent::MainComponent()
+    : pitch_controller_(nullptr),
+      frequency_calculator_(std::make_unique<FrequencyCalculator>()) {
   initialize_ui();
   setSize(400, 600);
+  startTimerHz(30);  // 30 FPS update rate
 }
 
-MainComponent::~MainComponent() = default;
+MainComponent::~MainComponent() { stopTimer(); }
 
 void MainComponent::initialize_ui() noexcept {
   try {
@@ -71,6 +80,49 @@ void MainComponent::resized() {
     frequency_label_.setBounds(bounds.removeFromTop(40));
   } catch (...) {
     DBG("Exception in MainComponent::resized()");
+  }
+}
+
+void MainComponent::set_pitch_controller(
+    PitchDetectionController* controller) noexcept {
+  pitch_controller_ = controller;
+}
+
+void MainComponent::timerCallback() {
+  if (pitch_controller_ == nullptr) {
+    return;
+  }
+
+  double frequency = 0.0;
+  double confidence = 0.0;
+
+  if (pitch_controller_->get_latest_result(frequency, confidence)) {
+    update_display(frequency);
+  } else {
+    // No valid pitch detected
+    note_label_.setText("--", juce::dontSendNotification);
+    frequency_label_.setText("0.00 Hz", juce::dontSendNotification);
+  }
+}
+
+void MainComponent::update_display(double frequency) noexcept {
+  try {
+    // Convert frequency to MIDI note
+    int midi_note = frequency_calculator_->frequency_to_midi(frequency);
+    std::string note_name = frequency_calculator_->midi_to_note_name(midi_note);
+    int octave = frequency_calculator_->midi_to_octave(midi_note);
+
+    // Format note display (e.g., "A4")
+    std::ostringstream note_stream;
+    note_stream << note_name << octave;
+    note_label_.setText(note_stream.str(), juce::dontSendNotification);
+
+    // Format frequency display (e.g., "440.00 Hz")
+    std::ostringstream freq_stream;
+    freq_stream << std::fixed << std::setprecision(2) << frequency << " Hz";
+    frequency_label_.setText(freq_stream.str(), juce::dontSendNotification);
+  } catch (...) {
+    DBG("Exception in MainComponent::update_display()");
   }
 }
 

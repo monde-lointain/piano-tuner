@@ -1,3 +1,4 @@
+#include "simple_tuner/controllers/PitchDetectionController.h"
 #include "simple_tuner/platform/mobile/AudioManager.h"
 #include "simple_tuner/ui/MainComponent.h"
 
@@ -52,6 +53,7 @@ class SimpleTunerApplication : public juce::JUCEApplication {
 
  private:
   std::unique_ptr<juce::DocumentWindow> main_window_;
+  std::unique_ptr<simple_tuner::PitchDetectionController> pitch_controller_;
 
 #if JUCE_IOS
   std::unique_ptr<simple_tuner::iOSPermissions> permissions_;
@@ -110,6 +112,22 @@ class SimpleTunerApplication : public juce::JUCEApplication {
         return;
       }
 
+      // Create pitch detection controller
+      constexpr std::size_t kBufferSize = 4096;
+      double sample_rate = audio_manager.get_sample_rate();
+      pitch_controller_ =
+          std::make_unique<simple_tuner::PitchDetectionController>(kBufferSize,
+                                                                   sample_rate);
+
+      // Set audio input handler to feed pitch controller
+      audio_manager.set_input_handler(
+          [this](const float* samples, int num_samples) {
+            if (pitch_controller_) {
+              pitch_controller_->process_audio(
+                  samples, static_cast<std::size_t>(num_samples));
+            }
+          });
+
       if (!audio_manager.start()) {
         DBG("Failed to start audio");
         show_audio_error_message();
@@ -124,7 +142,9 @@ class SimpleTunerApplication : public juce::JUCEApplication {
           juce::DocumentWindow::allButtons);
 
       main_window_->setUsingNativeTitleBar(true);
-      main_window_->setContentOwned(new simple_tuner::MainComponent(), true);
+      auto* main_component = new simple_tuner::MainComponent();
+      main_component->set_pitch_controller(pitch_controller_.get());
+      main_window_->setContentOwned(main_component, true);
 
 #if JUCE_IOS || JUCE_ANDROID
       main_window_->setFullScreen(true);
