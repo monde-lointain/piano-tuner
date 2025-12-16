@@ -24,8 +24,21 @@ bool AudioManager::initialize() noexcept {
     device_manager_->getAudioDeviceSetup(setup);
     setup.inputChannels.setRange(0, 1, true);   // Mono input
     setup.outputChannels.setRange(0, 2, true);  // Stereo output
-    setup.bufferSize = 256;                     // Low latency buffer
-    setup.sampleRate = 0;                       // Auto-detect (44.1/48kHz)
+
+    // Phase 5: Platform-specific low latency buffer configuration
+#if JUCE_IOS
+    // iOS: Request 128 samples for minimal latency
+    // AVAudioSession will be configured by JUCE with preferred buffer size
+    setup.bufferSize = 128;
+#elif JUCE_ANDROID
+    // Android: Try for smallest available buffer (typically 192-256)
+    setup.bufferSize = 128;
+#else
+    // Desktop/other: Use 256 as reasonable low latency default
+    setup.bufferSize = 256;
+#endif
+
+    setup.sampleRate = 0;  // Auto-detect (44.1/48kHz)
 
     error = device_manager_->setAudioDeviceSetup(setup, true);
     if (error.isNotEmpty()) {

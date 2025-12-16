@@ -13,7 +13,7 @@ MainComponent::MainComponent()
       frequency_calculator_(std::make_unique<FrequencyCalculator>()) {
   initialize_ui();
   setSize(400, 600);
-  startTimerHz(30);  // 30 FPS update rate
+  startTimerHz(60);  // 60 FPS update rate for lower latency
 }
 
 MainComponent::~MainComponent() { stopTimer(); }
