@@ -223,9 +223,9 @@ TEST_F(PitchDetectorTest, HarmonicRejection) {
 }
 
 TEST_F(PitchDetectorTest, LowSignalRejection) {
-  // Signal below -40dBFS threshold should be rejected
+  // Signal below -60dBFS threshold should be rejected
   constexpr double test_freq = 440.0;
-  constexpr double low_amplitude = 0.005;  // Approximately -50dBFS
+  constexpr double low_amplitude = 0.0003;  // Approximately -70dBFS
   auto samples = generate_sine(test_freq, kBufferSize, low_amplitude);
   auto result =
       detector_->detect_pitch_detailed(samples.data(), samples.size());

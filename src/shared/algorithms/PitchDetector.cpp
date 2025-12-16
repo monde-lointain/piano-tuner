@@ -8,11 +8,12 @@ namespace simple_tuner {
 
 namespace {
 // Constants
-constexpr double kDefaultThresholdDb = -40.0;
+constexpr double kDefaultThresholdDb = -50.0;
 constexpr double kDefaultMinFrequency = 32.7;    // C1
 constexpr double kDefaultMaxFrequency = 4186.0;  // C8
-constexpr double kClarityThreshold = 0.01;       // Minimum NSDF peak value
+constexpr double kBaseClarity = 0.01;            // Base clarity threshold
 constexpr double kEpsilon = 1e-10;               // Numerical stability
+constexpr double kPi = 3.14159265358979323846;
 }  // namespace
 
 PitchDetector::PitchDetector(double sample_rate, std::size_t buffer_size)
@@ -20,7 +21,9 @@ PitchDetector::PitchDetector(double sample_rate, std::size_t buffer_size)
       buffer_size_(buffer_size),
       threshold_db_(kDefaultThresholdDb),
       min_freq_(kDefaultMinFrequency),
-      max_freq_(kDefaultMaxFrequency) {
+      max_freq_(kDefaultMaxFrequency),
+      window_type_(WindowType::kRectangular),
+      base_clarity_threshold_(kBaseClarity) {
   // Calculate lag range from frequency limits
   // period = sample_rate / frequency
   // For max frequency (min period): min_lag = sample_rate / max_freq
@@ -36,6 +39,11 @@ PitchDetector::PitchDetector(double sample_rate, std::size_t buffer_size)
   nsdf_.resize(max_lag_ + 1, 0.0);
   autocorr_.resize(max_lag_ + 1, 0.0);
   square_sum_.resize(max_lag_ + 1, 0.0);
+  window_.resize(buffer_size_, 1.0);
+  working_.resize(buffer_size_, 0.0f);
+
+  // Pre-compute window coefficients
+  compute_window();
 }
 
 double PitchDetector::detect_pitch(const float* samples,
@@ -56,8 +64,18 @@ DetectionResult PitchDetector::detect_pitch_detailed(
     return DetectionResult(0.0, 0.0, false);
   }
 
-  // Compute NSDF
-  compute_nsdf(samples, num_samples);
+  // Use pre-allocated working buffer for pre-processing
+  const std::size_t copy_size = std::min(num_samples, working_.size());
+  std::copy(samples, samples + copy_size, working_.begin());
+
+  // Apply DC offset removal
+  remove_dc_offset(working_.data(), copy_size);
+
+  // Apply windowing (rectangular window = no-op for default)
+  apply_window(working_.data(), copy_size);
+
+  // Compute NSDF on processed signal
+  compute_nsdf(working_.data(), copy_size);
 
   // Find highest clarity peak
   int peak_index = find_highest_clarity_peak();
@@ -91,6 +109,15 @@ void PitchDetector::set_max_frequency(double max_freq) noexcept {
   max_freq_ = max_freq;
   min_lag_ = static_cast<int>(sample_rate_ / max_freq_);
   min_lag_ = std::max(min_lag_, 1);
+}
+
+void PitchDetector::set_window_type(WindowType type) noexcept {
+  window_type_ = type;
+  compute_window();
+}
+
+void PitchDetector::set_base_clarity_threshold(double threshold) noexcept {
+  base_clarity_threshold_ = threshold;
 }
 
 void PitchDetector::compute_nsdf(const float* samples,
@@ -129,9 +156,9 @@ void PitchDetector::compute_nsdf(const float* samples,
 }
 
 int PitchDetector::find_highest_clarity_peak() const noexcept {
-  // MPM algorithm: find the first peak that exceeds the clarity threshold
-  // Search from min_lag (skip DC component at lag=0)
-  // Ensure we have room for three-point test
+  // MPM algorithm: find the first peak that exceeds the adaptive clarity
+  // threshold Search from min_lag (skip DC component at lag=0) Ensure we have
+  // room for three-point test
   const int start_lag = std::max(min_lag_, 1);
   const int end_lag = std::min(max_lag_, static_cast<int>(nsdf_.size()) - 1);
 
@@ -139,8 +166,14 @@ int PitchDetector::find_highest_clarity_peak() const noexcept {
   for (int lag = start_lag; lag < end_lag; ++lag) {
     // Three-point local maximum test
     if (nsdf_[lag] > nsdf_[lag - 1] && nsdf_[lag] > nsdf_[lag + 1]) {
-      // Return first peak that exceeds clarity threshold
-      if (nsdf_[lag] >= kClarityThreshold) {
+      // Calculate adaptive threshold based on number of cycles in buffer
+      // For lower frequencies (fewer cycles), we relax the threshold
+      const double cycles = sample_rate_ / static_cast<double>(lag);
+      const double adaptive_threshold =
+          base_clarity_threshold_ / std::sqrt(std::max(cycles, 1.0));
+
+      // Return first peak that exceeds adaptive clarity threshold
+      if (nsdf_[lag] >= adaptive_threshold) {
         return lag;
       }
     }
@@ -149,9 +182,13 @@ int PitchDetector::find_highest_clarity_peak() const noexcept {
   // If no peak found (e.g., very low frequencies near buffer limit),
   // find the lag with highest NSDF value in the valid range
   int best_lag = -1;
-  double best_nsdf = kClarityThreshold;
+  double best_nsdf = 0.0;
   for (int lag = start_lag; lag <= end_lag; ++lag) {
-    if (nsdf_[lag] > best_nsdf) {
+    const double cycles = sample_rate_ / static_cast<double>(lag);
+    const double adaptive_threshold =
+        base_clarity_threshold_ / std::sqrt(std::max(cycles, 1.0));
+
+    if (nsdf_[lag] > best_nsdf && nsdf_[lag] >= adaptive_threshold) {
       best_nsdf = nsdf_[lag];
       best_lag = lag;
     }
@@ -208,6 +245,56 @@ double PitchDetector::calculate_rms(const float* samples,
   }
 
   return std::sqrt(sum_squares / static_cast<double>(num_samples));
+}
+
+void PitchDetector::compute_window() noexcept {
+  const std::size_t n = buffer_size_;
+
+  switch (window_type_) {
+    case WindowType::kRectangular:
+      std::fill(window_.begin(), window_.end(), 1.0);
+      break;
+
+    case WindowType::kHann:
+      for (std::size_t i = 0; i < n; ++i) {
+        window_[i] = 0.5 * (1.0 - std::cos(2.0 * kPi * i / (n - 1)));
+      }
+      break;
+
+    case WindowType::kHamming:
+      for (std::size_t i = 0; i < n; ++i) {
+        window_[i] = 0.54 - 0.46 * std::cos(2.0 * kPi * i / (n - 1));
+      }
+      break;
+  }
+}
+
+void PitchDetector::remove_dc_offset(float* samples,
+                                     std::size_t num_samples) const noexcept {
+  if (num_samples == 0) {
+    return;
+  }
+
+  // Calculate mean
+  double mean = 0.0;
+  for (std::size_t i = 0; i < num_samples; ++i) {
+    mean += samples[i];
+  }
+  mean /= static_cast<double>(num_samples);
+
+  // Subtract mean from all samples
+  for (std::size_t i = 0; i < num_samples; ++i) {
+    samples[i] -= static_cast<float>(mean);
+  }
+}
+
+void PitchDetector::apply_window(float* samples,
+                                 std::size_t num_samples) const noexcept {
+  const std::size_t samples_to_window = std::min(num_samples, window_.size());
+
+  for (std::size_t i = 0; i < samples_to_window; ++i) {
+    samples[i] *= static_cast<float>(window_[i]);
+  }
 }
 
 }  // namespace simple_tuner

@@ -6,6 +6,9 @@
 
 namespace simple_tuner {
 
+// Window types for signal pre-processing
+enum class WindowType { kRectangular, kHann, kHamming };
+
 // Pitch detection result with confidence and validity
 struct DetectionResult {
   double frequency;   // Detected frequency in Hz (0.0 if invalid)
@@ -39,11 +42,17 @@ class PitchDetector {
   void set_threshold_db(double threshold_db) noexcept;
   void set_min_frequency(double min_freq) noexcept;
   void set_max_frequency(double max_freq) noexcept;
+  void set_window_type(WindowType type) noexcept;
+  void set_base_clarity_threshold(double threshold) noexcept;
 
   // Getters for configuration
   double get_threshold_db() const noexcept { return threshold_db_; }
   double get_min_frequency() const noexcept { return min_freq_; }
   double get_max_frequency() const noexcept { return max_freq_; }
+  WindowType get_window_type() const noexcept { return window_type_; }
+  double get_base_clarity_threshold() const noexcept {
+    return base_clarity_threshold_;
+  }
 
  private:
   // NSDF computation (Normalized Square Difference Function)
@@ -63,21 +72,30 @@ class PitchDetector {
   double calculate_rms(const float* samples,
                        std::size_t num_samples) const noexcept;
 
+  // Pre-processing helpers
+  void compute_window() noexcept;
+  void remove_dc_offset(float* samples, std::size_t num_samples) const noexcept;
+  void apply_window(float* samples, std::size_t num_samples) const noexcept;
+
   // Configuration
   double sample_rate_;
   std::size_t buffer_size_;
-  double threshold_db_;  // Signal threshold in dB (default -40dB)
+  double threshold_db_;  // Signal threshold in dB (default -60dB)
   double min_freq_;      // Minimum detectable frequency (default 32.7 Hz, C1)
   double max_freq_;      // Maximum detectable frequency (default 4186 Hz, C8)
+  WindowType window_type_;         // Window function type (default Hann)
+  double base_clarity_threshold_;  // Base clarity threshold (default 0.01)
 
   // Lag range for autocorrelation
   int min_lag_;
   int max_lag_;
 
   // Pre-allocated buffers (avoid audio thread allocations)
-  std::vector<double> nsdf_;        // Normalized square difference function
-  std::vector<double> autocorr_;    // Autocorrelation values
-  std::vector<double> square_sum_;  // Running square sums for normalization
+  std::vector<double> nsdf_;            // Normalized square difference function
+  std::vector<double> autocorr_;        // Autocorrelation values
+  std::vector<double> square_sum_;      // Running square sums for normalization
+  std::vector<double> window_;          // Pre-computed window coefficients
+  mutable std::vector<float> working_;  // Working buffer for pre-processing
 };
 
 }  // namespace simple_tuner
