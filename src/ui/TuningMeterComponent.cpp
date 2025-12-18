@@ -28,7 +28,9 @@ TuningMeterComponent::TuningMeterComponent(const TuningMeterConfig& config)
 TuningMeterComponent::~TuningMeterComponent() { stopTimer(); }
 
 void TuningMeterComponent::update_needle_position(float cents) noexcept {
-  target_needle_position_ = cents;
+  // Clamp to valid range to prevent needle from getting stuck at extremes
+  target_needle_position_ =
+      std::max(-config_.cents_range, std::min(config_.cents_range, cents));
   has_signal_ = true;
 }
 
@@ -39,8 +41,16 @@ void TuningMeterComponent::set_no_signal() noexcept {
 
 void TuningMeterComponent::timerCallback() {
   // Apply damping to needle position
-  current_needle_position_ +=
-      (target_needle_position_ - current_needle_position_) * config_.damping;
+  float delta = target_needle_position_ - current_needle_position_;
+
+  // Snap to target if very close (avoids asymptotic crawl)
+  constexpr float kSnapThreshold = 0.01f;
+  if (std::abs(delta) < kSnapThreshold) {
+    current_needle_position_ = target_needle_position_;
+  } else {
+    current_needle_position_ += delta * config_.damping;
+  }
+
   repaint();
 }
 
