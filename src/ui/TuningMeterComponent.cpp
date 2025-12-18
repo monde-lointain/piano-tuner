@@ -294,6 +294,26 @@ void TuningMeterComponent::paint(juce::Graphics& g) {
   draw_interval_wedge(g, ui::kPureMajorThirdCents);  // Major third wedge
   draw_interval_wedge(g, ui::kPureMinorThirdCents);  // Minor third wedge
   draw_needle(g);                                    // Needle on top
+
+  // Draw "CENT" labels at bottom left and bottom right corners
+  auto bounds = getLocalBounds();
+  g.setFont(juce::FontOptions(12.0f, juce::Font::bold));
+  g.setColour(ui::kTextNeutral);
+
+  constexpr int kCentLabelOffset = 10;  // Offset from edge toward center
+  int bottom_y = bounds.getBottom() - 15;
+
+  // Left "CENT" label
+  g.drawText(
+      "CENT",
+      juce::Rectangle<int>(bounds.getX() + kCentLabelOffset, bottom_y, 40, 20),
+      juce::Justification::centredLeft);
+
+  // Right "CENT" label
+  g.drawText("CENT",
+             juce::Rectangle<int>(bounds.getRight() - 40 - kCentLabelOffset,
+                                  bottom_y, 40, 20),
+             juce::Justification::centredRight);
 }
 
 void TuningMeterComponent::resized() {

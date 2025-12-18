@@ -140,12 +140,7 @@ void NoteDisplayComponent::paint(juce::Graphics& g) {
     g.drawText(accidental_, accidental_area, juce::Justification::centredLeft);
   }
 
-  // Draw reference frequency (small, below note)
-  bounds.removeFromTop(10);  // Spacing
-  g.setColour(ui::kTextInactive);
-  g.setFont(juce::FontOptions(ref_freq_height));
-  g.drawText(reference_freq_, bounds.removeFromTop(ref_freq_height),
-             juce::Justification::centred);
+  // Frequency text removed per UI requirements
 }
 
 void NoteDisplayComponent::resized() {

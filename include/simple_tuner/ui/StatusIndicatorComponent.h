@@ -27,6 +27,8 @@ class StatusIndicatorComponent : public juce::Component {
   juce::String status_text_;
 
   void update_text() noexcept;
+  void draw_wedge_triangle(juce::Graphics& g, float center_x, float center_y,
+                           juce::Colour color);
 
   JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(StatusIndicatorComponent)
 };

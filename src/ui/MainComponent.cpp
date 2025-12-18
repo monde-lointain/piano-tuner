@@ -57,12 +57,7 @@ void MainComponent::initialize_ui() noexcept {
     };
     addAndMakeVisible(settings_button_.get());
 
-    // Create cent value label
-    cent_value_label_.setText("--", juce::dontSendNotification);
-    cent_value_label_.setFont(juce::FontOptions(24.0f, juce::Font::bold));
-    cent_value_label_.setJustificationType(juce::Justification::centred);
-    cent_value_label_.setColour(juce::Label::textColourId, ui::kTextNeutral);
-    addAndMakeVisible(cent_value_label_);
+    // Cent value label removed per UI requirements
 
   } catch (...) {
     DBG("Exception in MainComponent::initialize_ui()");
@@ -111,18 +106,12 @@ void MainComponent::resized() {
       mode_selector_->setBounds(
           bottom.removeFromTop(ui::kMinTouchTargetSize).reduced(40, 0));
 
-      // Center Zone: Meter + Cent Value + Status
-      int cent_value_height =
-          static_cast<int>(getHeight() * ui::kCentValueHeightRatio);
+      // Center Zone: Status + Meter
       int status_height = 40;
 
-      tuning_meter_->setBounds(
-          bounds.removeFromTop(bounds.getHeight() - cent_value_height -
-                               status_height - 20));  // 20px spacing
-      bounds.removeFromTop(10);                       // Spacing
-      cent_value_label_.setBounds(bounds.removeFromTop(cent_value_height));
-      bounds.removeFromTop(10);  // Spacing
       status_indicator_->setBounds(bounds.removeFromTop(status_height));
+      bounds.removeFromTop(10);  // Spacing
+      tuning_meter_->setBounds(bounds);
 
     } else {
       // Portrait layout (new)
@@ -132,20 +121,15 @@ void MainComponent::resized() {
           static_cast<int>(getHeight() * kPortraitNoteDisplayRatio);
       note_display_->setBounds(bounds.removeFromTop(note_display_height));
 
-      // Center Zone: Meter (40% height)
+      // Center Zone: Status + Meter
+      int status_height = 40;
+
+      status_indicator_->setBounds(bounds.removeFromTop(status_height));
+      bounds.removeFromTop(10);  // Spacing
+
       constexpr float kPortraitMeterRatio = 0.40f;
       int meter_height = static_cast<int>(getHeight() * kPortraitMeterRatio);
       tuning_meter_->setBounds(bounds.removeFromTop(meter_height));
-
-      // Cent value + status below meter
-      int cent_value_height =
-          static_cast<int>(getHeight() * ui::kCentValueHeightRatio);
-      int status_height = 40;
-
-      bounds.removeFromTop(10);  // Spacing
-      cent_value_label_.setBounds(bounds.removeFromTop(cent_value_height));
-      bounds.removeFromTop(10);  // Spacing
-      status_indicator_->setBounds(bounds.removeFromTop(status_height));
 
       // Bottom Zone: Controls (stacked horizontally)
       bounds.removeFromTop(10);  // Spacing
@@ -180,19 +164,12 @@ void MainComponent::timerCallback() {
     note_display_->update_note_with_cents(midi_note, confidence,
                                           static_cast<float>(cents));
     tuning_meter_->update_needle_position(static_cast<float>(cents));
-    cent_value_label_.setText(format_cents(cents), juce::dontSendNotification);
     status_indicator_->update_status(static_cast<float>(cents));
-
-    // Update cent label color based on in-tune status
-    juce::Colour cent_color = ui::get_tuning_color_for_text(cents);
-    cent_value_label_.setColour(juce::Label::textColourId, cent_color);
 
   } else {
     // No valid pitch detected - set all to "no signal" state
     note_display_->set_no_signal();
     tuning_meter_->set_no_signal();
-    cent_value_label_.setText("--", juce::dontSendNotification);
-    cent_value_label_.setColour(juce::Label::textColourId, ui::kTextInactive);
     status_indicator_->set_no_signal();
   }
 }

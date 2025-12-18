@@ -35,7 +35,6 @@ class MainComponent : public juce::Component, private juce::Timer {
   std::unique_ptr<StatusIndicatorComponent> status_indicator_;
   std::unique_ptr<ModeSelector> mode_selector_;
   std::unique_ptr<juce::DrawableButton> settings_button_;
-  juce::Label cent_value_label_;
 
   // Controllers and calculators
   PitchDetectionController* pitch_controller_;
